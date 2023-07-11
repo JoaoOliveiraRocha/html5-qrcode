@@ -573,7 +573,9 @@ export class Html5Qrcode {
             $this.renderedCamera = null;
 
             if ($this.element) {
-                $this.element.removeChild($this.canvasElement!);
+                if ($this.canvasElement) {
+                    $this.element.removeChild($this.canvasElement);
+                }                    
                 $this.canvasElement = null;
             }
 
@@ -1101,6 +1103,8 @@ export class Html5Qrcode {
         if (shouldShadingBeApplied) {
             this.possiblyInsertShadingElement(
                 this.element!, viewfinderWidth, viewfinderHeight, qrDimensions);
+
+                this.addLine();
         }
 
         this.createScannerPausedUiElement(this.element!);
@@ -1437,6 +1441,38 @@ export class Html5Qrcode {
         };
     }
 
+   // Function to create and add the sweeping line inside qr-code-box
+    private addLine() {
+        var parent = document.getElementById(Constants.SHADED_REGION_ELEMENT_ID);
+        if (!parent) {
+            return;
+        }
+
+        var line = document.createElement('div');
+        line.style.position = 'absolute';
+        line.style.top = '0';
+        line.style.left = '0';
+        line.style.width = '100%';
+        line.style.height = '2px';
+        line.style.backgroundColor = Constants.BORDER_SHADER_DEFAULT_COLOR;
+
+        parent.appendChild(line);
+
+        var animationDuration = '5s';
+        var animationName = 'lineAnimation';
+
+        var keyframes = `@keyframes ${animationName} {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }`;
+
+        var styleElement = document.createElement('style');
+        styleElement.innerHTML = keyframes;
+        document.head.appendChild(styleElement);
+
+        line.style.animation = `${animationName} ${animationDuration} linear infinite`;
+    };
+
     private possiblyInsertShadingElement(
         element: HTMLElement,
         width: number,
@@ -1472,8 +1508,8 @@ export class Html5Qrcode {
             || (height - qrboxSize.height) < 11) {
           this.hasBorderShaders = false;
         } else {
-            const smallSize = 5;
-            const largeSize = 40;
+            const smallSize = 2;
+            const largeSize = 25;
             this.insertShaderBorders(
                 shadingElement,
                 /* width= */ largeSize, 
